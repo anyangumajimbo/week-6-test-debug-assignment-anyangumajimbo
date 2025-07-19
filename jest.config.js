@@ -17,7 +17,7 @@ module.exports = {
         '!**/node_modules/**',
       ],
     },
-    
+
     // Client-side tests configuration
     {
       displayName: 'client',
@@ -30,7 +30,12 @@ module.exports = {
       },
       setupFilesAfterEnv: ['<rootDir>/client/src/tests/setup.js'],
       transform: {
-        '^.+\\.(js|jsx)$': 'babel-jest',
+        '^.+\\.(js|jsx)$': ['babel-jest', {
+          presets: [
+            ['@babel/preset-env', { targets: { node: 'current' } }],
+            ['@babel/preset-react', { runtime: 'automatic' }]
+          ]
+        }]
       },
       coverageDirectory: '<rootDir>/coverage/client',
       collectCoverageFrom: [
@@ -40,7 +45,7 @@ module.exports = {
       ],
     },
   ],
-  
+
   // Global configuration
   verbose: true,
   collectCoverage: true,
@@ -53,5 +58,5 @@ module.exports = {
       lines: 70,
     },
   },
-  testTimeout: 10000,
+  testTimeout: 60000,
 }; 

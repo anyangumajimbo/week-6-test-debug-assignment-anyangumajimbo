@@ -15,34 +15,45 @@ let postId;
 
 // Setup in-memory MongoDB server before all tests
 beforeAll(async () => {
-  mongoServer = await MongoMemoryServer.create();
-  const mongoUri = mongoServer.getUri();
-  await mongoose.connect(mongoUri);
+  try {
+    mongoServer = await MongoMemoryServer.create();
+    const mongoUri = mongoServer.getUri();
+    await mongoose.connect(mongoUri);
 
-  // Create a test user
-  const user = await User.create({
-    username: 'testuser',
-    email: 'test@example.com',
-    password: 'password123',
-  });
-  userId = user._id;
-  token = generateToken(user);
+    // Create a test user
+    const user = await User.create({
+      username: 'testuser',
+      email: 'test@example.com',
+      password: 'password123',
+    });
+    userId = user._id;
+    token = generateToken(user);
 
-  // Create a test post
-  const post = await Post.create({
-    title: 'Test Post',
-    content: 'This is a test post content',
-    author: userId,
-    category: mongoose.Types.ObjectId(),
-    slug: 'test-post',
-  });
-  postId = post._id;
+    // Create a test post
+    const post = await Post.create({
+      title: 'Test Post',
+      content: 'This is a test post content',
+      author: userId,
+      category: mongoose.Types.ObjectId(),
+      slug: 'test-post',
+    });
+    postId = post._id;
+  } catch (error) {
+    console.error('Setup failed:', error);
+    throw error;
+  }
 });
 
 // Clean up after all tests
 afterAll(async () => {
-  await mongoose.disconnect();
-  await mongoServer.stop();
+  try {
+    await mongoose.disconnect();
+    if (mongoServer) {
+      await mongoServer.stop();
+    }
+  } catch (error) {
+    console.error('Teardown failed:', error);
+  }
 });
 
 // Clean up database between tests
@@ -119,7 +130,7 @@ describe('GET /api/posts', () => {
 
   it('should filter posts by category', async () => {
     const categoryId = mongoose.Types.ObjectId().toString();
-    
+
     // Create a post with specific category
     await Post.create({
       title: 'Filtered Post',
@@ -154,7 +165,7 @@ describe('GET /api/posts', () => {
 
     const page1 = await request(app)
       .get('/api/posts?page=1&limit=10');
-    
+
     const page2 = await request(app)
       .get('/api/posts?page=2&limit=10');
 
@@ -243,7 +254,7 @@ describe('DELETE /api/posts/:id', () => {
       .set('Authorization', `Bearer ${token}`);
 
     expect(res.status).toBe(200);
-    
+
     // Verify post is deleted
     const deletedPost = await Post.findById(postId);
     expect(deletedPost).toBeNull();

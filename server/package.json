@@ -4,7 +4,8 @@
   "description": "",
   "main": "index.js",
   "scripts": {
-    "test": "jest --selectProjects=server"
+    "test": "jest --selectProjects=server",
+    "setup-test-db": "echo 'Using in-memory MongoDB for integration tests via mongodb-memory-server'"
   },
   "keywords": [],
   "author": "",
